@@ -1,10 +1,8 @@
 import * as React from 'react';
-import { styled, useTheme } from '@mui/material/styles';
+import { styled } from '@mui/material/styles';
 import {
     Box,
     Drawer as MuiDrawer,
-    AppBar as MuiAppBar,
-    Toolbar,
     List,
     CssBaseline,
     Typography,
@@ -17,11 +15,7 @@ import {
     Stack
 } from '@mui/material';
 import {
-    Menu as MenuIcon,
-    ChevronLeft as ChevronLeftIcon,
-    ChevronRight as ChevronRightIcon,
-    MoveToInbox as InboxIcon,
-    Mail as MailIcon,
+    ChevronLeft as ChevronLeftIcon
 } from '@mui/icons-material';
 
 import {
@@ -75,24 +69,6 @@ const DrawerFooter = styled('div')(({ theme }) => ({
     ...theme.mixins.toolbar,
 }));
 
-const AppBar = styled(MuiAppBar, {
-    shouldForwardProp: (prop) => prop !== 'open',
-})(({ theme, open }) => ({
-    zIndex: theme.zIndex.drawer + 1,
-    transition: theme.transitions.create(['width', 'margin'], {
-        easing: theme.transitions.easing.sharp,
-        duration: theme.transitions.duration.leavingScreen,
-    }),
-    ...(open && {
-        marginLeft: drawerWidth,
-        width: `calc(100% - ${drawerWidth}px)`,
-        transition: theme.transitions.create(['width', 'margin'], {
-            easing: theme.transitions.easing.sharp,
-            duration: theme.transitions.duration.enteringScreen,
-        }),
-    }),
-}));
-
 const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' })(
     ({ theme, open }) => ({
         width: drawerWidth,
@@ -120,7 +96,6 @@ const navbarOptions = [
 ];
 
 export default function MiniDrawer() {
-    const theme = useTheme();
     const [open, setOpen] = React.useState(false);
 
     const toggleDrawer = () => {
