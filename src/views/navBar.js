@@ -31,8 +31,9 @@ import {
 import { ContextMenu } from "../components";
 import { useTheme } from "@mui/material/styles";
 import { useNavigate, Outlet } from "react-router-dom";
-import { getItem, removeItem } from "../lib/store";
+import { removeItem } from "../lib/store";
 import { useSelector, useDispatch } from "react-redux";
+import { capitalizeSentence } from "../lib/functions";
 
 const drawerWidth = 240;
 
@@ -112,7 +113,8 @@ export default function MiniDrawer() {
   const savedMovies = useSelector((state) => state.savedMovies);
 
   useEffect(() => {
-    if (Object.keys(savedMovies).length) {
+    console.log("HERE 116", Object.keys(savedMovies).length, auth.email);
+    if (Object.keys(savedMovies).length && auth.email) {
       let userMovieList = savedMovies[auth.email];
       if (userMovieList) {
         let dummyInitialNavbarOptions = [...initialNavbarOptions];
@@ -123,11 +125,17 @@ export default function MiniDrawer() {
             path: `/dashboard/mylist?title=${item.title}`,
           };
         });
-        dummyInitialNavbarOptions[1]["nestedItems"] = nestedItem;
+        if (nestedItem.length) {
+          dummyInitialNavbarOptions[1]["nestedItems"] = nestedItem;
+        }
+        setNavbarOptions((prevValue) => dummyInitialNavbarOptions);
+      } else {
+        let dummyInitialNavbarOptions = [...initialNavbarOptions];
+        delete dummyInitialNavbarOptions[1]["nestedItems"];
         setNavbarOptions((prevValue) => dummyInitialNavbarOptions);
       }
     }
-  }, [savedMovies]);
+  }, [savedMovies, auth.email]);
 
   useEffect(() => {
     if (!open) {
@@ -249,7 +257,9 @@ export default function MiniDrawer() {
                             {nestedItem.icon}
                           </ListItemIcon>
                         )}
-                        <ListItemText primary={nestedItem.label} />
+                        <ListItemText
+                          primary={capitalizeSentence(nestedItem.label)}
+                        />
                       </ListItemButton>
                     ))}
                   </List>

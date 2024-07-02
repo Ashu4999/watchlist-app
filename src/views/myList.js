@@ -1,19 +1,9 @@
-import {
-  Typography,
-  Container,
-  Grid,
-  Card,
-  CardMedia,
-  Tooltip,
-  Stack,
-  CardContent,
-  IconButton,
-} from "@mui/material";
-import { BookmarkAdd as BookmarkAddIcon } from "@mui/icons-material";
+import { Typography, Container } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { useLocation } from "react-router-dom";
 import { capitalizeSentence } from "../lib/functions";
+import { MoviesCards } from "../components";
 
 const MyList = () => {
   const location = useLocation();
@@ -21,6 +11,7 @@ const MyList = () => {
   const auth = useSelector((state) => state.auth);
   const savedMovies = useSelector((state) => state.savedMovies);
   const [currentSavedMovies, setCurrentSavedMovies] = useState(null);
+  const [isFavoriteToggled, setIsFavoriteToggled] = useState(false);
 
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
@@ -31,72 +22,42 @@ const MyList = () => {
       let currentTitleMovies = userMovieList.find(
         (item) => item.title === title
       );
-      console.log(currentTitleMovies);
+      console.log("25", currentTitleMovies);
       setCurrentSavedMovies(currentTitleMovies);
     }
-  }, [location]);
+  }, [location, isFavoriteToggled]);
 
   return (
     <Container maxWidth="xl">
-      <Typography variant="h4" sx={{ fontWeight: 600, mb: 2 }}>
-        Saved Movies for the "{capitalizeSentence(currentTitle)}"
-      </Typography>
-      {currentSavedMovies &&
-      currentSavedMovies.selectedMovies &&
-      currentSavedMovies.selectedMovies.length ? (
-        <Grid container spacing={2}>
-          {currentSavedMovies.selectedMovies.map((item) => (
-            <Grid item xs={12} sm={6} md={3} key={item.imdbID}>
-              <Card>
-                <CardMedia
-                  component="img"
-                  sx={{ height: 450, objectFit: "fill" }}
-                  image={item.Poster}
-                  title={`${item.Title}-${item.imdbID}`}
-                  alt="Not Available"
-                />
-                <CardContent sx={{ textAlign: "left" }}>
-                  <Stack sx={{ flexDirection: "row" }}>
-                    <Tooltip title={item.Title}>
-                      <Typography
-                        noWrap
-                        sx={{ width: "90%" }}
-                        variant="h5"
-                        component="div"
-                      >
-                        {item.Title}
-                      </Typography>
-                    </Tooltip>
-                    <IconButton
-                      sx={{ padding: 0, width: "10%" }}
-                      // onClick={() => saveOrRemoveImdbIdsUnderListAndUser(item)}
-                    >
-                      <BookmarkAddIcon
-                      // sx={{
-                      //   color:
-                      //     savedMoviesOfSerchValue &&
-                      //     savedMoviesOfSerchValue.selectedImdbIds.includes(
-                      //       item.imdbID
-                      //     )
-                      //       ? "green"
-                      //       : "",
-                      // }}
-                      />
-                    </IconButton>
-                  </Stack>
-                  <Typography variant="body2" color="text.secondary">
-                    {item.Year}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {item.Type}
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
+      {!currentTitle &&
+      (!savedMovies[auth.email] ||
+        (savedMovies[auth.email] && savedMovies[auth.email].length === 0)) ? (
+        <Typography variant="h4" sx={{ fontWeight: 600 }}>
+          There is no saved movie list.
+        </Typography>
       ) : (
-        <Typography>Something Went Wrong...</Typography>
+        <>
+          <Typography variant="h4" sx={{ fontWeight: 600, mb: 2 }}>
+            Saved Movies for the "{capitalizeSentence(currentTitle)}"
+          </Typography>
+          {currentSavedMovies &&
+          currentSavedMovies.selectedMovies &&
+          currentSavedMovies.selectedMovies.length ? (
+            <MoviesCards
+              data={currentSavedMovies.selectedMovies}
+              searchedValue={currentTitle}
+              setIsFavoriteToggledParentSignal={setIsFavoriteToggled}
+            />
+          ) : (
+            <Typography>
+              {currentTitle &&
+              currentSavedMovies.selectedMovies &&
+              currentSavedMovies.selectedMovies.length === 0
+                ? "No Movies Found"
+                : "Something Went Wrong..."}
+            </Typography>
+          )}
+        </>
       )}
     </Container>
   );
