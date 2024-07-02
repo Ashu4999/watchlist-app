@@ -1,4 +1,4 @@
-import * as React from "react";
+import React, { useEffect } from "react";
 import { styled } from "@mui/material/styles";
 import {
   Box,
@@ -14,6 +14,7 @@ import {
   ListItemText,
   Stack,
   Tooltip,
+  Collapse,
 } from "@mui/material";
 import {
   ChevronLeft as ChevronLeftIcon,
@@ -22,6 +23,8 @@ import {
   MoreHoriz as MoreHorizIcon,
   Home as HomeIcon,
   Checklist as ChecklistIcon,
+  ExpandLess as ExpandLessIcon,
+  ExpandMore as ExpandMoreIcon,
 } from "@mui/icons-material";
 
 import { ContextMenu } from "../components";
@@ -90,15 +93,44 @@ const Drawer = styled(MuiDrawer, {
 
 const navbarOptions = [
   { label: "Home", icon: <HomeIcon />, path: "/dashboard/home" },
-  { label: "My Lists", icon: <ChecklistIcon />, path: "/dashboard/mylist" },
+  {
+    label: "My Lists",
+    icon: <ChecklistIcon />,
+    path: "/dashboard/mylist",
+    nestedItems: [
+      {
+        label: "Pokemon",
+        icon: <ChecklistIcon />,
+        path: "/dashboard/mylist?name=pokemon",
+      },
+      {
+        label: "Tom Cruise",
+        icon: <ChecklistIcon />,
+        path: "/dashboard/mylist?name=tom-cruise",
+      },
+    ],
+  },
 ];
 
 export default function MiniDrawer() {
   const [open, setOpen] = React.useState(false);
+  const [collapseStates, setCollapseStates] = React.useState({});
   const theme = useTheme();
   const navigate = useNavigate();
   const auth = useSelector((state) => state.auth);
   const dispatch = useDispatch();
+
+  useEffect(() => {
+    if (!open) {
+      setCollapseStates({});
+    }
+  }, [open]);
+
+  useEffect(() => {
+    if (Object.keys(collapseStates).length && open === false) {
+      setOpen(true);
+    }
+  }, [collapseStates]);
 
   const menuOptions = [
     {
@@ -115,6 +147,12 @@ export default function MiniDrawer() {
 
   const toggleDrawer = () => {
     setOpen((prevValue) => !prevValue);
+  };
+
+  const handleCollapseClick = (index) => {
+    setCollapseStates((prevState) => ({
+      [index]: !prevState[index],
+    }));
   };
 
   return (
@@ -142,38 +180,105 @@ export default function MiniDrawer() {
         </DrawerHeader>
         <Divider />
         <List sx={{ height: "80%" }}>
-          {navbarOptions.map((navOption, index) => (
-            <ListItem
-              key={navOption.label}
-              disablePadding
-              sx={{ display: "block" }}
-              onClick={() => navigate(navOption.path)}
-            >
-              <ListItemButton
-                sx={{
-                  minHeight: 48,
-                  justifyContent: open ? "initial" : "center",
-                  px: 2.5,
-                }}
-              >
-                {navOption.icon && (
-                  <ListItemIcon
+          {navbarOptions.map((navOption, index) =>
+            navOption.nestedItems ? (
+              <Box key={navOption.label}>
+                <ListItem
+                  disablePadding
+                  sx={{ display: "block" }}
+                  onClick={() => handleCollapseClick(index)}
+                >
+                  <ListItemButton
                     sx={{
-                      minWidth: 0,
-                      mr: open ? 3 : "auto",
-                      justifyContent: "center",
+                      minHeight: 48,
+                      justifyContent: open ? "initial" : "center",
+                      px: 2.5,
                     }}
                   >
-                    {navOption.icon}
-                  </ListItemIcon>
-                )}
-                <ListItemText
-                  primary={navOption.label}
-                  sx={{ opacity: open ? 1 : 0 }}
-                />
-              </ListItemButton>
-            </ListItem>
-          ))}
+                    {navOption.icon && (
+                      <ListItemIcon
+                        sx={{
+                          minWidth: 0,
+                          mr: open ? 3 : "auto",
+                          justifyContent: "center",
+                        }}
+                      >
+                        {navOption.icon}
+                      </ListItemIcon>
+                    )}
+                    <ListItemText
+                      primary={navOption.label}
+                      sx={{ opacity: open ? 1 : 0 }}
+                    />
+                    {collapseStates[index] ? (
+                      <ExpandLessIcon />
+                    ) : (
+                      <ExpandMoreIcon />
+                    )}
+                  </ListItemButton>
+                </ListItem>
+                <Collapse
+                  in={collapseStates[index]}
+                  timeout="auto"
+                  unmountOnExit
+                >
+                  <List component="div" disablePadding>
+                    {navOption.nestedItems.map((nestedItem) => (
+                      <ListItemButton
+                        key={nestedItem.label}
+                        sx={{ pl: 4 }}
+                        onClick={() => navigate(nestedItem.path)}
+                      >
+                        {nestedItem.icon && (
+                          <ListItemIcon
+                            sx={{
+                              minWidth: 0,
+                              mr: 3,
+                              justifyContent: "center",
+                            }}
+                          >
+                            {nestedItem.icon}
+                          </ListItemIcon>
+                        )}
+                        <ListItemText primary={nestedItem.label} />
+                      </ListItemButton>
+                    ))}
+                  </List>
+                </Collapse>
+              </Box>
+            ) : (
+              <ListItem
+                key={navOption.label}
+                disablePadding
+                sx={{ display: "block" }}
+                onClick={() => navigate(navOption.path)}
+              >
+                <ListItemButton
+                  sx={{
+                    minHeight: 48,
+                    justifyContent: open ? "initial" : "center",
+                    px: 2.5,
+                  }}
+                >
+                  {navOption.icon && (
+                    <ListItemIcon
+                      sx={{
+                        minWidth: 0,
+                        mr: open ? 3 : "auto",
+                        justifyContent: "center",
+                      }}
+                    >
+                      {navOption.icon}
+                    </ListItemIcon>
+                  )}
+                  <ListItemText
+                    primary={navOption.label}
+                    sx={{ opacity: open ? 1 : 0 }}
+                  />
+                </ListItemButton>
+              </ListItem>
+            )
+          )}
         </List>
         <DrawerFooter>
           <Stack
