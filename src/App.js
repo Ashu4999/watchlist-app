@@ -1,6 +1,6 @@
 import "./App.css";
-import { NavBar, ProtectedRoute, NotFound404 } from "./components";
-import { Login, HomePage } from "./views";
+import { ProtectedRoute, NotFound404 } from "./components";
+import { Login, HomePage, NavBar, MyList } from "./views";
 import { Route, Routes } from "react-router-dom";
 import { useSelector } from "react-redux";
 
@@ -25,7 +25,10 @@ function App() {
             <NavBar />
           </ProtectedRoute>
         }
-      />
+      >
+        <Route path="home" element={<HomePage />} />
+        <Route path="mylist" element={<MyList />} />
+      </Route>
       <Route path="*" element={<NotFound404 />} />
     </Routes>
   );

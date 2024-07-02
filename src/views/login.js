@@ -46,7 +46,7 @@ const Login = () => {
 
     dispatch({ type: "LOGIN", payload: { isAuthenticated: true, email } });
     setItem("auth", { isAuthenticated: true, email });
-    navigate("/dashboard");
+    navigate("/dashboard/home");
   };
 
   return (

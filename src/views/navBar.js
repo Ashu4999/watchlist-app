@@ -13,6 +13,7 @@ import {
   ListItemIcon,
   ListItemText,
   Stack,
+  Tooltip,
 } from "@mui/material";
 import {
   ChevronLeft as ChevronLeftIcon,
@@ -23,9 +24,11 @@ import {
   Checklist as ChecklistIcon,
 } from "@mui/icons-material";
 
-import { ContextMenu } from ".";
-import { HomePage } from "../views";
+import { ContextMenu } from "../components";
 import { useTheme } from "@mui/material/styles";
+import { useNavigate, Outlet } from "react-router-dom";
+import { removeItem } from "../lib/store";
+import { useSelector, useDispatch } from "react-redux";
 
 const drawerWidth = 240;
 
@@ -85,18 +88,30 @@ const Drawer = styled(MuiDrawer, {
   }),
 }));
 
-const menuOptions = [
-  { label: "Logout", action: () => console.log("Logout clicked") },
-];
-
 const navbarOptions = [
-  { label: "Home", icon: <HomeIcon />, path: "/home" },
-  { label: "My Lists", icon: <ChecklistIcon />, path: "/mylists" },
+  { label: "Home", icon: <HomeIcon />, path: "/dashboard/home" },
+  { label: "My Lists", icon: <ChecklistIcon />, path: "/dashboard/mylist" },
 ];
 
 export default function MiniDrawer() {
   const [open, setOpen] = React.useState(false);
   const theme = useTheme();
+  const navigate = useNavigate();
+  const auth = useSelector((state) => state.auth);
+  const dispatch = useDispatch();
+
+  const menuOptions = [
+    {
+      label: "Logout",
+      action: () => {
+        dispatch({
+          type: "LOGOUT",
+          payload: { isAuthenticated: false, email: null },
+        });
+        removeItem("auth");
+      },
+    },
+  ];
 
   const toggleDrawer = () => {
     setOpen((prevValue) => !prevValue);
@@ -132,6 +147,7 @@ export default function MiniDrawer() {
               key={navOption.label}
               disablePadding
               sx={{ display: "block" }}
+              onClick={() => navigate(navOption.path)}
             >
               <ListItemButton
                 sx={{
@@ -177,7 +193,11 @@ export default function MiniDrawer() {
               <>
                 <Stack sx={{ flexDirection: "row", gap: "10px" }}>
                   <AccountCircleIcon sx={{ color: "#0000008A" }} />
-                  <Typography>GUEST</Typography>
+                  <Tooltip title={auth.email}>
+                    <Typography sx={{ width: "70%" }} noWrap>
+                      {auth.email}
+                    </Typography>
+                  </Tooltip>
                 </Stack>
                 <ContextMenu
                   buttonLabel={
@@ -193,7 +213,7 @@ export default function MiniDrawer() {
         </DrawerFooter>
       </Drawer>
       <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
-        <HomePage />
+        <Outlet />
       </Box>
     </Box>
   );

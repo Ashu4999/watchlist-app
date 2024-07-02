@@ -12,6 +12,7 @@ import {
   Pagination,
   Tooltip,
   CircularProgress,
+  IconButton,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import {
@@ -20,6 +21,8 @@ import {
 } from "@mui/icons-material";
 import axios from "axios";
 import { Snackbar } from "../components";
+import { getItem, setItem } from "../lib/store";
+import { useSelector } from "react-redux";
 
 const WelcomeNote = () => {
   const theme = useTheme();
@@ -106,8 +109,25 @@ const MoviesListSection = ({
   curretPageNo,
   setCurrentPageNo,
   isLoading,
+  searchedValue,
 }) => {
+  const auth = useSelector((state) => state.auth);
   const [totalPages, setTotalPages] = useState(null);
+  const [savedMoviesOfSerchValue, setsavedMoviesOfSerchValue] = useState(null);
+  const [isFavoriteToggled, setIsFavoriteToggled] = useState(false);
+
+  useEffect(() => {
+    if (searchedValue) {
+      let savedMoviesList = getItem("savedData")
+        ? getItem("savedData")[auth.email] || []
+        : [];
+      let searchValueSavedMovies = savedMoviesList.find(
+        (item) => item.title === searchedValue.toLowerCase()
+      );
+      console.log("HERE 121", searchValueSavedMovies);
+      setsavedMoviesOfSerchValue(searchValueSavedMovies);
+    }
+  }, [searchedValue, isFavoriteToggled]);
 
   useEffect(() => {
     if (data && data.totalResults) {
@@ -120,6 +140,44 @@ const MoviesListSection = ({
 
   const handlePageChange = (event, page) => {
     setCurrentPageNo((prevValue) => page);
+  };
+
+  const saveOrRemoveImdbIdsUnderListAndUser = (data) => {
+    let savedMovies = getItem("savedData") || {};
+    let searchedValueLower = searchedValue.toLowerCase();
+
+    let foundUserInSavedMovies = Object.keys(savedMovies).find(
+      (userEmail) => userEmail === auth.email
+    );
+
+    if (foundUserInSavedMovies) {
+      let userLists = savedMovies[auth.email];
+
+      let foundList = userLists.find(
+        (list) => list.title === searchedValueLower
+      );
+
+      if (foundList) {
+        if (!foundList.selectedImdbIds.includes(data.imdbID)) {
+          foundList.selectedImdbIds.push(data.imdbID);
+        } else {
+          foundList.selectedImdbIds = foundList.selectedImdbIds.filter(
+            (id) => id !== data.imdbID
+          );
+        }
+      } else {
+        userLists.push({
+          title: searchedValueLower,
+          selectedImdbIds: [data.imdbID],
+        });
+      }
+    } else {
+      savedMovies[auth.email] = [
+        { title: searchedValueLower, selectedImdbIds: [data.imdbID] },
+      ];
+    }
+    setItem("savedData", savedMovies);
+    setIsFavoriteToggled((prevValue) => !prevValue);
   };
 
   return (
@@ -148,11 +206,34 @@ const MoviesListSection = ({
                   alt="Not Available"
                 />
                 <CardContent sx={{ textAlign: "left" }}>
-                  <Tooltip title={item.Title}>
-                    <Typography noWrap variant="h5" component="div">
-                      {item.Title}
-                    </Typography>
-                  </Tooltip>
+                  <Stack sx={{ flexDirection: "row" }}>
+                    <Tooltip title={item.Title}>
+                      <Typography
+                        noWrap
+                        sx={{ width: "90%" }}
+                        variant="h5"
+                        component="div"
+                      >
+                        {item.Title}
+                      </Typography>
+                    </Tooltip>
+                    <IconButton
+                      sx={{ padding: 0, width: "10%" }}
+                      onClick={() => saveOrRemoveImdbIdsUnderListAndUser(item)}
+                    >
+                      <BookmarkAddIcon
+                        sx={{
+                          color:
+                            savedMoviesOfSerchValue &&
+                            savedMoviesOfSerchValue.selectedImdbIds.includes(
+                              item.imdbID
+                            )
+                              ? "green"
+                              : "",
+                        }}
+                      />
+                    </IconButton>
+                  </Stack>
                   <Typography variant="body2" color="text.secondary">
                     {item.Year}
                   </Typography>
@@ -176,7 +257,7 @@ const MoviesListSection = ({
           <Typography>
             {data && data.Error
               ? data.Error
-              : "Please enter search value for data"}
+              : "Please enter search value for movies"}
           </Typography>
         </Box>
       )}
@@ -231,7 +312,7 @@ const HomePage = () => {
       let params = {
         apiKey: process.env.REACT_APP_OMDBAPI_APIKEY,
         page: curretPageNo,
-        // type: "movie",
+        type: "movie",
       };
 
       if (searchedValue) {
@@ -264,6 +345,7 @@ const HomePage = () => {
         curretPageNo={curretPageNo}
         setCurrentPageNo={setCurrentPageNo}
         isLoading={isLoading}
+        searchedValue={searchedValue}
       />
       <Snackbar
         open={snackbarConfig.open}
