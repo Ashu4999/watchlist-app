@@ -174,7 +174,7 @@ const MoviesListSection = ({
           }}
         >
           <Typography>
-            {data.Error ? data.Error : "Please enter search value for data"}
+            {data && data.Error ? data.Error : "Please enter search value for data"}
           </Typography>
         </Box>
       )}

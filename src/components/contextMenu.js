@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Box, Menu, MenuItem } from '@mui/material';
 
-function BasicMenu({ buttonLabel, menuOptions }) {
+function ContextMenu({ buttonLabel, menuOptions }) {
     const [anchorEl, setAnchorEl] = useState(null);
     const open = Boolean(anchorEl);
 
@@ -46,4 +46,4 @@ function BasicMenu({ buttonLabel, menuOptions }) {
     );
 }
 
-export default BasicMenu;
+export default ContextMenu;

@@ -23,7 +23,7 @@ import {
   Checklist as ChecklistIcon,
 } from "@mui/icons-material";
 
-import { ContextMenu } from "../components";
+import { ContextMenu } from ".";
 import { HomePage } from "../views";
 import { useTheme } from "@mui/material/styles";
 
