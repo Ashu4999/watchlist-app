@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { styled } from "@mui/material/styles";
 import {
   Box,
@@ -25,12 +25,13 @@ import {
   Checklist as ChecklistIcon,
   ExpandLess as ExpandLessIcon,
   ExpandMore as ExpandMoreIcon,
+  Movie as MovieIcon,
 } from "@mui/icons-material";
 
 import { ContextMenu } from "../components";
 import { useTheme } from "@mui/material/styles";
 import { useNavigate, Outlet } from "react-router-dom";
-import { removeItem } from "../lib/store";
+import { getItem, removeItem } from "../lib/store";
 import { useSelector, useDispatch } from "react-redux";
 
 const drawerWidth = 240;
@@ -91,24 +92,12 @@ const Drawer = styled(MuiDrawer, {
   }),
 }));
 
-const navbarOptions = [
+const initialNavbarOptions = [
   { label: "Home", icon: <HomeIcon />, path: "/dashboard/home" },
   {
     label: "My Lists",
     icon: <ChecklistIcon />,
     path: "/dashboard/mylist",
-    nestedItems: [
-      {
-        label: "Pokemon",
-        icon: <ChecklistIcon />,
-        path: "/dashboard/mylist?name=pokemon",
-      },
-      {
-        label: "Tom Cruise",
-        icon: <ChecklistIcon />,
-        path: "/dashboard/mylist?name=tom-cruise",
-      },
-    ],
   },
 ];
 
@@ -119,6 +108,26 @@ export default function MiniDrawer() {
   const navigate = useNavigate();
   const auth = useSelector((state) => state.auth);
   const dispatch = useDispatch();
+  const [navbarOptions, setNavbarOptions] = useState(initialNavbarOptions);
+  const savedMovies = useSelector((state) => state.savedMovies);
+
+  useEffect(() => {
+    if (Object.keys(savedMovies).length) {
+      let userMovieList = savedMovies[auth.email];
+      if (userMovieList) {
+        let dummyInitialNavbarOptions = [...initialNavbarOptions];
+        let nestedItem = userMovieList.map((item) => {
+          return {
+            label: item.title,
+            icon: <MovieIcon />,
+            path: `/dashboard/mylist?title=${item.title}`,
+          };
+        });
+        dummyInitialNavbarOptions[1]["nestedItems"] = nestedItem;
+        setNavbarOptions((prevValue) => dummyInitialNavbarOptions);
+      }
+    }
+  }, [savedMovies]);
 
   useEffect(() => {
     if (!open) {
@@ -179,7 +188,7 @@ export default function MiniDrawer() {
           </IconButton>
         </DrawerHeader>
         <Divider />
-        <List sx={{ height: "80%" }}>
+        <List sx={{ height: "80%", overflowY: "scroll" }}>
           {navbarOptions.map((navOption, index) =>
             navOption.nestedItems ? (
               <Box key={navOption.label}>
@@ -296,12 +305,10 @@ export default function MiniDrawer() {
               <AccountCircleIcon sx={{ width: "100%", color: "#0000008A" }} />
             ) : (
               <>
-                <Stack sx={{ flexDirection: "row", gap: "10px" }}>
+                <Stack sx={{ flexDirection: "row", gap: "10px", width: "85%" }}>
                   <AccountCircleIcon sx={{ color: "#0000008A" }} />
                   <Tooltip title={auth.email}>
-                    <Typography sx={{ width: "70%" }} noWrap>
-                      {auth.email}
-                    </Typography>
+                    <Typography noWrap>{auth.email}</Typography>
                   </Tooltip>
                 </Stack>
                 <ContextMenu

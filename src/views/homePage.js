@@ -22,7 +22,7 @@ import {
 import axios from "axios";
 import { Snackbar } from "../components";
 import { getItem, setItem } from "../lib/store";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 
 const WelcomeNote = () => {
   const theme = useTheme();
@@ -115,6 +115,7 @@ const MoviesListSection = ({
   const [totalPages, setTotalPages] = useState(null);
   const [savedMoviesOfSerchValue, setsavedMoviesOfSerchValue] = useState(null);
   const [isFavoriteToggled, setIsFavoriteToggled] = useState(false);
+  const dispatch = useDispatch();
 
   useEffect(() => {
     if (searchedValue) {
@@ -160,24 +161,41 @@ const MoviesListSection = ({
       if (foundList) {
         if (!foundList.selectedImdbIds.includes(data.imdbID)) {
           foundList.selectedImdbIds.push(data.imdbID);
+          foundList.selectedMovies.push(data);
         } else {
           foundList.selectedImdbIds = foundList.selectedImdbIds.filter(
             (id) => id !== data.imdbID
+          );
+          foundList.selectedMovies = foundList.selectedMovies.filter(
+            (item) => item.imdbID !== data.imdbID
           );
         }
       } else {
         userLists.push({
           title: searchedValueLower,
           selectedImdbIds: [data.imdbID],
+          selectedMovies: [data],
         });
       }
     } else {
       savedMovies[auth.email] = [
-        { title: searchedValueLower, selectedImdbIds: [data.imdbID] },
+        {
+          title: searchedValueLower,
+          selectedImdbIds: [data.imdbID],
+          selectedMovies: [data],
+        },
       ];
     }
     setItem("savedData", savedMovies);
     setIsFavoriteToggled((prevValue) => !prevValue);
+
+    let latestData = getItem("savedData");
+    if (latestData) {
+      dispatch({
+        type: "SAVED_MOIVE_CHANGE",
+        payload: latestData,
+      });
+    }
   };
 
   return (

@@ -7,4 +7,20 @@ function debounce(func, wait) {
   };
 }
 
-export { debounce };
+function capitalizeSentence(sentence) {
+  if (sentence.length === 0) {
+    return "";
+  }
+
+  const words = sentence.split(" ");
+
+  const capitalizedWords = words.map(
+    (word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+  );
+
+  const capitalizedSentence = capitalizedWords.join(" ");
+
+  return capitalizedSentence;
+}
+
+export { debounce, capitalizeSentence };
