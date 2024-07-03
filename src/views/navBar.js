@@ -225,7 +225,7 @@ export default function MiniDrawer() {
                     )}
                     <ListItemText
                       primary={navOption.label}
-                      sx={{ opacity: open ? 1 : 0 }}
+                      sx={{ display: open ? "" : "none" }}
                     />
                     {collapseStates[index] ? (
                       <ExpandLessIcon />
