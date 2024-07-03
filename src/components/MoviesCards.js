@@ -95,7 +95,11 @@ const MoviesCards = ({ data, searchedValue }) => {
             <CardMedia
               component="img"
               sx={{ height: 450, objectFit: "fill" }}
-              image={item.Poster}
+              image={
+                item.Poster.toLowerCase() !== "n/a"
+                  ? item.Poster
+                  : "https://upload.wikimedia.org/wikipedia/commons/d/d1/Image_not_available.png"
+              }
               title={`${item.Title}-${item.imdbID}`}
               alt="Not Available"
             />

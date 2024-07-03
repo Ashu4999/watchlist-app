@@ -173,7 +173,7 @@ export default function MiniDrawer() {
   };
 
   return (
-    <Box sx={{ display: "flex" }}>
+    <Box sx={{ display: { xs: "block", sm: "flex" } }}>
       <CssBaseline />
       <Drawer variant="permanent" open={open}>
         <DrawerHeader sx={{ height: "10%" }}>
@@ -292,7 +292,7 @@ export default function MiniDrawer() {
                   )}
                   <ListItemText
                     primary={navOption.label}
-                    sx={{ opacity: open ? 1 : 0 }}
+                    sx={{ display: open ? "" : "none" }}
                   />
                 </ListItemButton>
               </ListItem>
@@ -334,7 +334,14 @@ export default function MiniDrawer() {
           </Stack>
         </DrawerFooter>
       </Drawer>
-      <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
+      <Box
+        component="main"
+        sx={{
+          flexGrow: 1,
+          p: 3,
+          [theme.breakpoints.down("sm")]: { marginLeft: "40px" },
+        }}
+      >
         <Outlet />
       </Box>
     </Box>
